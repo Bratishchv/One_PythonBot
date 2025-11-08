@@ -1,5 +1,5 @@
 # One PythonBot
-# Версия 1.2
+# Версия 1.3
 
 import telebot as tbot, pickle, random, time, json
 import wisdom, jokes
@@ -28,7 +28,7 @@ def print_wisdom(message):
 def get_joke(message):
     bot.reply_to(message, random.choice(jokes.JOKES))
 
-@bot.message_handler(commands=["random"])
+@bot.message_handler(commands=["machine", "money"])
 def money(message):
     randint = random.randint(0, 100)
     bot.reply_to(message, text="Раскручиваю автомат...")
@@ -41,9 +41,16 @@ def money(message):
     elif randint > 50:
         bot.reply_to(message, text="Вы проиграли.")
 
+
+@bot.message_handler(commands=["stop", "break"])
+def stop(message): 
+    bot.send_message(message.chat.id, text="Выключаюсь..."); 
+    bot.stop_bot()
+
+
 @bot.message_handler(commands=["help"])
 def help(message):
-    bot.reply_to(message, text="Доступные команды:  \n/start\n/wisdom\n/joke\n/money\n/help") 
+    bot.reply_to(message, text="Доступные команды:  \n/start\n/wisdom\n/joke\n/machine\n/help") 
 
 
 @bot.message_handler(content_types=["text"])
