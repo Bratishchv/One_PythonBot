@@ -1,8 +1,7 @@
 # One PythonBot
 # Версия 1.2
 
-import telebot, pickle, random, time
-from telebot import TeleBot
+import telebot as tbot, pickle, random, time, json
 import wisdom, jokes
 
 """
@@ -11,8 +10,10 @@ def load_token():
         return pickle.load(file)
 """
 
-TOKEN = '8207941725:AAHlCI0KzzDU9Vg0Yk-gh2UB2_plyEhg_-M'
-bot = TeleBot(TOKEN)
+with open("key.json") as file:
+    TOKEN = json.load(file)["key"]
+
+bot = tbot.TeleBot(TOKEN)
 
 
 @bot.message_handler(commands=["start"])
