@@ -3,5 +3,11 @@ token.dat
 
 __pycache__
 
+compile.bat
+build
+dist
+
 jokes.py
 wisdom.py
+
+main.spec
