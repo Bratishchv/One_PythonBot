@@ -1,6 +1,7 @@
 # One PythonBot
 # Версия 1.4
 
+
 import telebot as tbot, pickle, random, time, json
 import wisdom, jokes
 
@@ -14,7 +15,7 @@ with open("key.json") as file:
     TOKEN = json.load(file)["key"]
 
 bot = tbot.TeleBot(TOKEN)
-timer_setup = False
+
 
 
 @bot.message_handler(commands=["start"])
@@ -28,6 +29,14 @@ def print_wisdom(message):
 @bot.message_handler(commands=["joke"])
 def get_joke(message):
     bot.reply_to(message, random.choice(jokes.JOKES))
+
+@bot.message_handler(commands=["coin"])
+def coin(message):
+    bot_mess = bot.send_message(message.chat.id, "Подбрасываю монетку...")
+    coins = ("л орёл", "ла решка")
+    time.sleep(2)
+
+    bot.reply_to(bot_mess, f"Выпа{random.choice(coins)}.")
 
 @bot.message_handler(commands=["machine"])
 def money(message):
@@ -51,37 +60,64 @@ def cube(message):
 
 @bot.message_handler(commands=["timer"])
 def timer(message):
-    global timer_setup
-    bot.send_message(message.chat.id, "Введите время в секундах устанавлеммого таймера:")
-    timer_setup = True
+    global timer_setup1
+    bot.send_message(message.chat.id, "Введите время в минутах устанавлеммого таймера (секунды вы ещё сможете указать):")
+    timer_setup1 = True
 
 @bot.message_handler(content_types=["text"])
-def get_timer_time(message):
-    global timer_setup
-    if timer_setup:
-        global timer_time, start_time
+def get_timer_time_seckonds(message):
+    global timer_setup1, timer_setup2
+    if timer_setup2:
+        global timer_time
         try:
-            timer_time = int(message.text)
+            timer_time_seckonds = int(message.text)
         except:
             bot.reply_to(message, "Это не число!")
         else:
-            if timer_time > 300:
-                bot.reply_to(message, "\U0001F6D1 Слишком долго! Максиум 5 минут (300 секунд).")
+            if timer_time_seckonds >= 60:
+                bot.reply_to(message, "\U0001F6D1 60 секунд -- это минута! Минуты нужно писать в" + 
+                                      "минуты, а секунды -- в секунды!")
             else:
-                bot.reply_to(message, f"Ок. Таймер на {timer_time} секунд. Скоро сработает! \U000023F3")
-                start_time = time.time_ns() / 1_000_000_000
-                timer_setup = False
-                time.sleep(timer_time)
+                timer_setup1 = False
+                timer_setup2 = True
+                timer_time += timer_time_seckonds
+                bot.reply_to(message, f"Ок. Таймер на {timer_time // 60} минут и на {timer_time - timer_time // 60} секунд. " + 
+                                       "Скоро сработает! \U000023F3")
+                
+                if timer_time >= 300:
+                    timer_time_minets = timer_time // 60
+                    if timer_time_minets != 0:
+                        for i in range(1, timer_time_minets):
+                            time.sleep(60)
+                    else:
+                        time.sleep(timer_time)
+
                 bot_mess = bot.send_message(message.chat.id, "\U000023F2")
                 bot.reply_to(bot_mess, "Конец таймера!")
 
+@bot.message_handler(content_types=["text"])
+def get_timer_time_min(message):
+    global timer_setup1, timer_setup2
+    if timer_setup1:
+        global timer_time, timer_time
+        try:
+            timer_time_minets = int(message.text)
+        except:
+            bot.reply_to(message, "Это не число!")
+        else:
+            if timer_time_minets > 5:
+                bot.reply_to(message, "\U0001F6D1 Слишком долго! Максиум 5 минут.")
+            else:
+                timer_time += 60 * timer_time_minets
+                timer_setup1 = False
+                timer_setup2 = True
+ 
 class Exit(Exception): pass
 
 @bot.message_handler(commands=["stop", "break"])
 def stop(message): 
     bot.send_message(message.chat.id, text="Выключаюсь..."); 
     raise Exit("The user has logged out of the program.")
-    bot.stop_bot()
 
 @bot.message_handler(content_types=["voice"])
 def handle_voice(message):
@@ -90,12 +126,21 @@ def handle_voice(message):
 
 @bot.message_handler(commands=["help"])
 def help(message):
-    bot.reply_to(message, text="Доступные команды:  \n/start\n/wisdom\n/joke\n/machine\n/cube\n/timer\n/help") 
-
+    bot.reply_to(message, 
+                 text = f"""Справка по командам: 
+start - Приветствие
+wisdom - Получить мудрость
+joke - Получить шутку
+machine - Покрутить автомат
+cube - Кинуть кубик
+coin - Подбросить монетку
+timer - Завести таймер
+help - Помощь"""                 
+                ) 
 
 @bot.message_handler(content_types=["text"])
 def text_test(message):
-    if timer_setup == False and message.text.lower() == "тест":
+    if not timer_setup1 and not timer_setup2 and message.text.lower() == "тест":
         bot.send_message(message.chat.id, "Успех!")
 
 
