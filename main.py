@@ -15,6 +15,8 @@ with open("key.json") as file:
     TOKEN = json.load(file)["key"]
 
 bot = tbot.TeleBot(TOKEN)
+timer_setup1 = False
+timer_setup2 = False
 
 
 
@@ -110,8 +112,19 @@ def get_timer_time_min(message):
             else:
                 timer_time += 60 * timer_time_minets
                 timer_setup1 = False
+                bot.send_message(message.chat.id, "А теперь введите дополнительные секунды.")
                 timer_setup2 = True
  
+
+@bot.message_handler(commands=["get_password"])
+def get_password(message):
+    import string
+    chars = string.ascii_letters + string.digits + string.punctuation
+    #chars = string.printable
+    password = "".join(random.sample(chars, 16))
+    bot.send_message(message.chat.id, text=f"Сгенерироваемый пароль: {password}")
+
+
 class Exit(Exception): pass
 
 @bot.message_handler(commands=["stop", "break"])
